@@ -220,11 +220,7 @@ uint16_t * encrypt16(uint16_t * ptext, uint16_t * S, uint16_t r)
 	A = *  ptext +      *  S;
 	B = * (ptext + 1) + * (S + 1);
 	uint16_t i;
-	//printf("Current memory location of S[0] is %p\n",(void *)(&S));
 	for (i = 1; i <= r; i++) {
-		//printf("Current words in expanded key: %x\n", * (S + 2*i));
-		//comment or append '\n' line below to break program
-		printf("message ");
 		A = rotl16((A ^ B), B) + * (S + 2*i);
 		B = rotl16((B ^ A), A) + * (S + 2*i + 1);
 	}
@@ -240,13 +236,102 @@ uint16_t * decrypt16(uint16_t * ctext, uint16_t * S, uint16_t r)
 	 * through the main routine.
 	 */
 	uint16_t A, B;
+	A = * ctext;
+	B = * (ctext + 1);
 	static uint16_t * ptext;
 	ptext = malloc(sizeof(uint16_t)*2);
 	uint16_t i;
-	//printf("Current memory location of S[0] is %p\n",(void *)(&S));
 	for (i = r; i > 0; i--) {
 		B = rotr16((B - * (S + 2*i + 1)), A)^A;
 		A = rotr16((A - * (S + 2*i)), B)^B;
+	}
+	B = B - * (S + 1);
+	A = A - * S;
+        * ptext = A;
+	* (ptext + 1) = B;
+	return ptext;
+}
+
+uint32_t * encrypt32(uint32_t * ptext, uint32_t * S, uint16_t r)
+{
+	/* Takes a block of two plaintext words and returns a block of two
+	 * ciphertext words. Stepping through and checking for EOF is done
+	 * through the main routine.
+	 */
+	uint32_t A, B;
+	static uint32_t * ctext;
+	ctext = malloc(sizeof(uint32_t)*2);
+	A = *  ptext +      *  S;
+	B = * (ptext + 1) + * (S + 1);
+	uint16_t i;
+	for (i = 1; i <= r; i++) {
+		A = rotl32((A ^ B), B) + * (S + 2*i);
+		B = rotl32((B ^ A), A) + * (S + 2*i + 1);
+	}
+        * ctext = A;
+	* (ctext + 1) = B;
+	return ctext;
+}
+
+uint32_t * decrypt32(uint32_t * ctext, uint32_t * S, uint16_t r)
+{
+	/* Takes a block of two ciphertext words and returns a block of two
+	 * plaintext words. Stepping through and checking for EOF is done
+	 * through the main routine.
+	 */
+	uint32_t A, B;
+	A = * ctext;
+	B = * (ctext + 1);
+	static uint32_t * ptext;
+	ptext = malloc(sizeof(uint32_t)*2);
+	uint16_t i;
+	for (i = r; i > 0; i--) {
+		B = rotr32((B - * (S + 2*i + 1)), A)^A;
+		A = rotr32((A - * (S + 2*i)), B)^B;
+	}
+	B = B - * (S + 1);
+	A = A - * S;
+        * ptext = A;
+	* (ptext + 1) = B;
+	return ptext;
+}
+
+uint64_t * encrypt64(uint64_t * ptext, uint64_t * S, uint16_t r)
+{
+	/* Takes a block of two plaintext words and returns a block of two
+	 * ciphertext words. Stepping through and checking for EOF is done
+	 * through the main routine.
+	 */
+	uint64_t A, B;
+	static uint64_t * ctext;
+	ctext = malloc(sizeof(uint64_t)*2);
+	A = *  ptext +      *  S;
+	B = * (ptext + 1) + * (S + 1);
+	uint16_t i;
+	for (i = 1; i <= r; i++) {
+		A = rotl64((A ^ B), B) + * (S + 2*i);
+		B = rotl64((B ^ A), A) + * (S + 2*i + 1);
+	}
+        * ctext = A;
+	* (ctext + 1) = B;
+	return ctext;
+}
+
+uint64_t * decrypt64(uint64_t * ctext, uint64_t * S, uint16_t r)
+{
+	/* Takes a block of two ciphertext words and returns a block of two
+	 * plaintext words. Stepping through and checking for EOF is done
+	 * through the main routine.
+	 */
+	uint64_t A, B;
+	A = * ctext;
+	B = * (ctext + 1);
+	static uint64_t * ptext;
+	ptext = malloc(sizeof(uint64_t)*2);
+	uint16_t i;
+	for (i = r; i > 0; i--) {
+		B = rotr64((B - * (S + 2*i + 1)), A)^A;
+		A = rotr64((A - * (S + 2*i)), B)^B;
 	}
 	B = B - * (S + 1);
 	A = A - * S;
@@ -259,15 +344,15 @@ int main(void) {
 	uint16_t b = 16;
 	static uint8_t K[16] = {0x91, 0xb5, 0xee, 0x5c, 0x38, 0x51, 0xab, 0xd4,
 	0x53, 0xa0, 0x3a, 0x49, 0x71, 0xdd, 0x88, 0x49};
-	uint16_t * key_out;
-        key_out	= key_expand16(K,b,12);
-	uint16_t plaintext[] = {0x1234, 0xabcd};
-	uint16_t * ciphertext;
-	ciphertext = encrypt16(plaintext,key_out,12);
-	printf("ciphertext is %x %x.\n", * ciphertext, * (ciphertext + 1));
-	uint16_t * newplaintext;
-	newplaintext = decrypt16(ciphertext,key_out,12);
-	printf("decrypted ciphertext is %x %x.\n", * newplaintext, *
+	uint64_t * key_out;
+        key_out	= key_expand64(K,b,12);
+	uint64_t plaintext[] = {0x1234123412341234, 0xabcdabcdabcdabcd};
+	uint64_t * ciphertext;
+	ciphertext = encrypt64(plaintext,key_out,12);
+	printf("ciphertext is %lx %lx.\n", * ciphertext, * (ciphertext + 1));
+	uint64_t * newplaintext;
+	newplaintext = decrypt64(ciphertext,key_out,12);
+	printf("decrypted ciphertext is %lx %lx.\n", * newplaintext, *
 	       (newplaintext + 1));
 	free(newplaintext);
         free(ciphertext);
