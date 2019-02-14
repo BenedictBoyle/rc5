@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <math.h>
+#include "rc5.h"
 
 /*
  * Parameters: the word length w in bits;
@@ -22,15 +19,6 @@
  * The above parameters can be set via flags, with default values w = 32,
  * r = 16 and b = 10.
  */
-
-#define P16 0xb7e1
-#define Q16 0x9e37
-
-#define P32 0xb7e15163
-#define Q32 0x9e3779b9
-
-#define P64 0xb7e151628aed2a6b
-#define Q64 0x9e3779b97f4a7c15
 
 uint16_t rotl16(uint16_t val, unsigned int rot)
 {
@@ -340,7 +328,7 @@ uint64_t * decrypt64(uint64_t * ctext, uint64_t * S, uint16_t r)
 	return ptext;
 }
 
-int main(void) {
+/* int main(void) {
 	uint16_t b = 16;
 	static uint8_t K[16] = {0x91, 0xb5, 0xee, 0x5c, 0x38, 0x51, 0xab, 0xd4,
 	0x53, 0xa0, 0x3a, 0x49, 0x71, 0xdd, 0x88, 0x49};
@@ -359,4 +347,4 @@ int main(void) {
 	free(key_out);
 	return EXIT_SUCCESS;
 }
-
+*/
