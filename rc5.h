@@ -1,7 +1,6 @@
 #ifndef _GUARD_RC5
 #define _GUARD_RC5
 
-#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>

@@ -100,7 +100,7 @@ uint16_t * key_expand16(uint8_t * K, uint16_t b, uint16_t r)
 	        m = (m + 1) % t;
 	        n = (n + 1) % c;
 	}
-	free(L);
+	free(L);//should be zeroing it first.
 	return S;
 }
 
@@ -144,7 +144,7 @@ uint32_t * key_expand32(uint8_t * K, uint16_t b, uint16_t r)
 	        m = (m + 1) % t;
 	        n = (n + 1) % c;
 	}
-	free(L);
+	free(L);//Should be zeroing it first;
 	return S;
 }
 
@@ -192,15 +192,14 @@ uint64_t * key_expand64(uint8_t * K, uint16_t b, uint16_t r)
 	        m = (m + 1) % t;
 	        n = (n + 1) % c;
 	}
-	free(L);
+	free(L); //should be zeroing it first.
 	return S;
 }
 
 uint16_t * encrypt16(uint16_t * ptext, uint16_t * S, uint16_t r)
 {
 	/* Takes a block of two plaintext words and returns a block of two
-	 * ciphertext words. Stepping through and checking for EOF is done
-	 * through the main routine.
+	 * ciphertext words. 
 	 */
 	uint16_t A, B;
 	static uint16_t * ctext;
@@ -220,8 +219,7 @@ uint16_t * encrypt16(uint16_t * ptext, uint16_t * S, uint16_t r)
 uint16_t * decrypt16(uint16_t * ctext, uint16_t * S, uint16_t r)
 {
 	/* Takes a block of two ciphertext words and returns a block of two
-	 * plaintext words. Stepping through and checking for EOF is done
-	 * through the main routine.
+	 * plaintext words. 
 	 */
 	uint16_t A, B;
 	A = * ctext;
@@ -243,8 +241,7 @@ uint16_t * decrypt16(uint16_t * ctext, uint16_t * S, uint16_t r)
 uint32_t * encrypt32(uint32_t * ptext, uint32_t * S, uint16_t r)
 {
 	/* Takes a block of two plaintext words and returns a block of two
-	 * ciphertext words. Stepping through and checking for EOF is done
-	 * through the main routine.
+	 * ciphertext words. 
 	 */
 	uint32_t A, B;
 	static uint32_t * ctext;
@@ -264,8 +261,7 @@ uint32_t * encrypt32(uint32_t * ptext, uint32_t * S, uint16_t r)
 uint32_t * decrypt32(uint32_t * ctext, uint32_t * S, uint16_t r)
 {
 	/* Takes a block of two ciphertext words and returns a block of two
-	 * plaintext words. Stepping through and checking for EOF is done
-	 * through the main routine.
+	 * plaintext words. 
 	 */
 	uint32_t A, B;
 	A = * ctext;
@@ -287,8 +283,7 @@ uint32_t * decrypt32(uint32_t * ctext, uint32_t * S, uint16_t r)
 uint64_t * encrypt64(uint64_t * ptext, uint64_t * S, uint16_t r)
 {
 	/* Takes a block of two plaintext words and returns a block of two
-	 * ciphertext words. Stepping through and checking for EOF is done
-	 * through the main routine.
+	 * ciphertext words. 
 	 */
 	uint64_t A, B;
 	static uint64_t * ctext;
@@ -308,8 +303,7 @@ uint64_t * encrypt64(uint64_t * ptext, uint64_t * S, uint16_t r)
 uint64_t * decrypt64(uint64_t * ctext, uint64_t * S, uint16_t r)
 {
 	/* Takes a block of two ciphertext words and returns a block of two
-	 * plaintext words. Stepping through and checking for EOF is done
-	 * through the main routine.
+	 * plaintext words. 
 	 */
 	uint64_t A, B;
 	A = * ctext;
