@@ -1,5 +1,5 @@
-#ifndef _GUARD_RC5
-#define _GUARD_RC5
+#ifndef _GUARD_PRIMITIVES
+#define _GUARD_PRIMITIVES
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -32,3 +32,4 @@ uint32_t * decrypt32(uint32_t * ctext, uint32_t * S, uint16_t r);
 uint64_t * decrypt64(uint64_t * ctext, uint64_t * S, uint16_t r);
 
 #endif
+

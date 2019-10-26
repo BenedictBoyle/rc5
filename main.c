@@ -1,4 +1,4 @@
-#include "rc5.h"
+#include "primitives.h"
 #include "io_helper.h"
 
 void usage(void)

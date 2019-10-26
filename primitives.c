@@ -1,4 +1,4 @@
-#include "rc5.h"
+#include "primitives.h"
 
 /*
  * Parameters: the word length w in bits;
@@ -333,23 +333,3 @@ uint64_t *decrypt64(uint64_t *ctext, uint64_t *S, uint16_t r)
 	return ptext;
 }
 
-/*int main(void) {
-	uint16_t b = 16;
-	static uint8_t K[16] = {0x91, 0xb5, 0xee, 0x5c, 0x38, 0x51, 0xab, 0xd4,
-	0x53, 0xa0, 0x3a, 0x49, 0x71, 0xdd, 0x88, 0x49};
-	uint64_t *key_out;
-        key_out	= key_expand64(K,b,12);
-	uint64_t plaintext[] = {0x1234123412341234, 0xabcdabcdabcdabcd};
-	uint64_t *ciphertext;
-	ciphertext = encrypt64(plaintext,key_out,12);
-	printf("ciphertext is %lx %lx.\n", *ciphertext, *(ciphertext + 1));
-	uint64_t *newplaintext;
-	newplaintext = decrypt64(ciphertext,key_out,12);
-	printf("decrypted ciphertext is %lx %lx.\n", *newplaintext, *
-	       (newplaintext + 1));
-	free(newplaintext);
-        free(ciphertext);
-	free(key_out);
-	return EXIT_SUCCESS;
-}
-*/
