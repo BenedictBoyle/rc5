@@ -1,4 +1,4 @@
-#include "io_helper.h"
+#include "ioroutines.h"
 
 indata read_input(FILE *instream)
 {
@@ -40,13 +40,16 @@ void free_indata(indata)
 	free(indata.inbuf);
 }
 
-data16 prepare_data16(indata input, cmode_t cmode)
+data16 prepare_data16(indata input, padmode_t padmode, opmode_t opmode)
 {
 	/* Take input buffer, return pointer to list of words PKCS #7 padded to appropriate length for mode
 	 */
 
 	size_t pad;
-	pad = ((size_t) 4) - (input.inlen % 4);
+	if (padmode == CTS)
+		pad = ((size_t) 4) - (((input.inlen - 1) % 4) + 1);
+	else
+		pad = ((size_t) 4) - (input.inlen % 4);
 	indata p_input;
 	p_input.inlen = input.inlen + pad;
 	p_input.inbuf = realloc(input.inbuf, p_input.inlen);
@@ -57,7 +60,7 @@ data16 prepare_data16(indata input, cmode_t cmode)
 
 	size_t i;
 	for (i = input.inlen; i < p_input.inlen; i++) {
-		if (cmode == CTS)
+		if (padmode == CTS)
 			*(p_input.inbuf + i) = (uint8_t) 0;
 		else
 			*(p_input.inbuf + i) = (uint8_t) pad;
@@ -79,13 +82,16 @@ data16 prepare_data16(indata input, cmode_t cmode)
 	return ret;
 }
 
-data32 prepare_data32(indata input, cmode_t cmode)
+data32 prepare_data32(indata input, padmode_t padmode, opmode_t opmode)
 {
 	/* Take input buffer, return pointer to list of words PKCS #7 padded to appropriate length for mode
 	 */
 
 	size_t pad;
-	pad = ((size_t) 8) - (input.inlen % 8);
+	if (padmode == CTS)
+		pad = ((size_t) 8) - (((input.inlen - 1) % 8) + 1);
+	else
+		pad = ((size_t) 8) - (input.inlen % 8);
 	indata p_input;
 	p_input.inlen = input.inlen + pad;
 	p_input.inbuf = realloc(input.inbuf, p_input.inlen);
@@ -96,7 +102,7 @@ data32 prepare_data32(indata input, cmode_t cmode)
 
 	size_t i;
 	for (i = input.inlen; i < p_input.inlen; i++) {
-		if (cmode == CTS)
+		if (padmode == CTS)
 			*(p_input.inbuf + i) = (uint8_t) 0;
 		else
 			*(p_input.inbuf + i) = (uint8_t) pad;
@@ -122,14 +128,14 @@ data32 prepare_data32(indata input, cmode_t cmode)
 	return ret;
 }
 
-data64 prepare_data64(indata input, cmode_t cmode)
+data64 prepare_data64(indata input, padmode_t padmode, opmode_t opmode)
 {
 	/* Take input buffer, return pointer to list of words PKCS #7 padded to appropriate length for mode
 	 */
 
 	size_t pad;
-	if (cmode == CTS)
-		pad = 0;
+	if (padmode == CTS)
+		pad = ((size_t) 16) - (((input.inlen - 1) % 16) + 1);
 	else
 		pad = ((size_t) 16) - (input.inlen % 16);
 	indata p_input;
@@ -143,7 +149,7 @@ data64 prepare_data64(indata input, cmode_t cmode)
 	size_t i;
 
 	for (i = input.inlen; i < p_input.inlen; i++) {
-		if (cmode == CTS)
+		if (padmode == CTS)
 			*(p_input.inbuf + i) = (uint8_t) 0;
 		else
 			*(p_input.inbuf + i) = (uint8_t) pad;

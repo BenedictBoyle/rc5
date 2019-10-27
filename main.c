@@ -1,5 +1,5 @@
 #include "primitives.h"
-#include "io_helper.h"
+#include "ioroutines.h"
 
 void usage(void)
 {
@@ -12,7 +12,7 @@ int main(int argc, char ** argv)
 	//set default parameters
 	size_t key_size = 10; //default value for b = key size in bytes
 	size_t num_rounds = 16; //default value for r = number of rounds
-	bsize_t bsize = mode_64; //default value for block size = 2*(word size in bits)	
+	wsize_t wsize = mode_32; //default value for word size in bits	
 	cmode_t cmode = CBC; //default encryption mode - cipher block-chaining
 
 	//prepare input data for processing according to parameters
