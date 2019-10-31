@@ -62,17 +62,17 @@ uint64_t rotr64(uint64_t val, unsigned int rot)
 	return (val >> rot | val << ( (-rot) & mask));
 }
 
-uint16_t *key_expand16(uint8_t *K, uint16_t b, uint16_t r)
+uint16_t *key_expand16(uint8_t *K, size_t b, size_t r)
 {
 	//Copy K[0],...,K[b-1] into L[0],...,L[ceil((b-1)/2)]
 
 	float temp = ((float) b)/2.0;
-	uint16_t c = ceil(temp);
-	uint32_t t = 2*(r + 1);
+	size_t c = ceil(temp);
+	size_t t = 2*(r + 1);
 
 	static uint16_t *L;
         L = malloc(sizeof(uint16_t)*c);
-	int i;
+	size_t i;
 	for ( i = 0; i < c; i++) {
 		*(L + i) = ((0xffff & (uint16_t) K[2*i]) << 8) | (uint16_t)
 			K[2*i+1];
@@ -91,9 +91,9 @@ uint16_t *key_expand16(uint8_t *K, uint16_t b, uint16_t r)
 	}
 
 	//Mix the secret key L in with S using three passes of length max(c,t)
-	int m = 0, n = 0;
+	size_t m = 0, n = 0;
 	uint16_t A = 0, B = 0;
-	int k = fmax(c,t);
+	size_t k = fmax(c,t);
 	for (i = 0; i < 3*k; i++) {
 		A = *(S + m) = rotl16(((*(S + m)) + A + B),3);
 		B = *(L + n) = rotl16(((*(L + n)) + A + B),(A + B));
@@ -107,17 +107,17 @@ uint16_t *key_expand16(uint8_t *K, uint16_t b, uint16_t r)
 	return S;
 }
 
-uint32_t *key_expand32(uint8_t *K, uint16_t b, uint16_t r)
+uint32_t *key_expand32(uint8_t *K, size_t b, size_t r)
 {
 	//Copy K[0],...,K[b-1] into L[0],...,L[ceil((b-1)/4)]
 
 	float temp = ((float) b)/4.0;
-	uint16_t c = ceil(temp);
-	uint32_t t = 2*(r + 1);
+	size_t c = ceil(temp);
+	size_t t = 2*(r + 1);
 
 	static uint32_t *L;
         L = malloc(sizeof(uint32_t)*c);
-	int i;
+	size_t i;
 	for ( i = 0; i < c; i++) {
 		*(L + i) = ((0x000000ff & (uint32_t) K[4*i]  ) << 24) |
 			    ((0x000000ff & (uint32_t) K[4*i+1]) << 16) |
@@ -138,9 +138,9 @@ uint32_t *key_expand32(uint8_t *K, uint16_t b, uint16_t r)
 	}
 
 	//Mix the secret key L in with S using three passes of length max(c,t)
-	int m = 0, n = 0;
+	size_t m = 0, n = 0;
 	uint32_t A = 0, B = 0;
-	int k = fmax(c,t);
+	size_t k = fmax(c,t);
 	for (i = 0; i < 3*k; i++) {
 		A = *(S + m) = rotl32(((*(S + m)) + A + B),3);
 		B = *(L + n) = rotl32(((*(L + n)) + A + B),(A + B));
@@ -155,17 +155,17 @@ uint32_t *key_expand32(uint8_t *K, uint16_t b, uint16_t r)
 	return S;
 }
 
-uint64_t *key_expand64(uint8_t *K, uint16_t b, uint16_t r)
+uint64_t *key_expand64(uint8_t *K, size_t b, size_t r)
 {
 	//Copy K[0],...,K[b-1] into L[0],...,L[ceil((b-1)/8)]
 
 	float temp = ((float) b)/8.0;
 	uint64_t c = ceil(temp);
-	uint32_t t = 2*(r + 1);
+	size_t t = 2*(r + 1);
 
 	static uint64_t *L;
         L = malloc(sizeof(uint64_t)*c);
-	int i;
+	size_t i;
 	for ( i = 0; i < c; i++) {
 		*(L + i) = ((0x00000000000000ff & (uint64_t) K[8*i]  ) << 56) |
 			    ((0x00000000000000ff & (uint64_t) K[8*i+1]) << 48) |
@@ -190,9 +190,9 @@ uint64_t *key_expand64(uint8_t *K, uint16_t b, uint16_t r)
 	}
 
 	//Mix the secret key L in with S using three passes of length max(c,t)
-	int m = 0, n = 0;
+	size_t m = 0, n = 0;
 	uint64_t A = 0, B = 0;
-	int k = fmax(c,t);
+	size_t k = fmax(c,t);
 	for (i = 0; i < 3*k; i++) {
 		A = *(S + m) = rotl64(((*(S + m)) + A + B),3);
 		B = *(L + n) = rotl64(((*(L + n)) + A + B),(A + B));
@@ -207,37 +207,32 @@ uint64_t *key_expand64(uint8_t *K, uint16_t b, uint16_t r)
 	return S;
 }
 
-uint16_t *encrypt16(uint16_t *ptext, uint16_t *S, uint16_t r)
+void encrypt16(uint16_t *ptext, uint16_t *ctext, uint16_t *S, size_t r)
 {
-	/* Takes a block of two plaintext words and returns a block of two
-	 * ciphertext words. 
+	/* Takes two pointers to blocks of two plaintext words and places the enciphered plaintext
+	 * into the ciphertext block. 
 	 */
 	uint16_t A, B;
-	static uint16_t *ctext;
-	ctext = malloc(sizeof(uint16_t)*2);
 	A = * ptext +      * S;
 	B = *(ptext + 1) + *(S + 1);
-	uint16_t i;
+	size_t i;
 	for (i = 1; i <= r; i++) {
 		A = rotl16((A ^ B), B) + *(S + 2*i);
 		B = rotl16((B ^ A), A) + *(S + 2*i + 1);
 	}
         *ctext = A;
 	*(ctext + 1) = B;
-	return ctext;
 }
 
-uint16_t *decrypt16(uint16_t *ctext, uint16_t *S, uint16_t r)
+void decrypt16(uint16_t *ctext, uint16_t *ptext, uint16_t *S, size_t r)
 {
-	/* Takes a block of two ciphertext words and returns a block of two
-	 * plaintext words. 
+	/* Takes two pointers to blocks of two plaintext words and places the deciphered ciphertext
+	 * into the plaintext block. 
 	 */
 	uint16_t A, B;
 	A = *ctext;
 	B = *(ctext + 1);
-	static uint16_t *ptext;
-	ptext = malloc(sizeof(uint16_t)*2);
-	uint16_t i;
+	size_t i;
 	for (i = r; i > 0; i--) {
 		B = rotr16((B - *(S + 2*i + 1)), A)^A;
 		A = rotr16((A - *(S + 2*i)), B)^B;
@@ -246,40 +241,34 @@ uint16_t *decrypt16(uint16_t *ctext, uint16_t *S, uint16_t r)
 	A = A - *S;
         *ptext = A;
 	*(ptext + 1) = B;
-	return ptext;
 }
 
-uint32_t *encrypt32(uint32_t *ptext, uint32_t *S, uint16_t r)
+void encrypt32(uint32_t *ptext, uint32_t *ctext, uint32_t *S, size_t r)
 {
-	/* Takes a block of two plaintext words and returns a block of two
-	 * ciphertext words. 
+	/* Takes two pointers to blocks of two plaintext words and places the enciphered plaintext
+	 * into the ciphertext block. 
 	 */
 	uint32_t A, B;
-	static uint32_t *ctext;
-	ctext = malloc(sizeof(uint32_t)*2);
 	A = * ptext +      * S;
 	B = *(ptext + 1) + *(S + 1);
-	uint16_t i;
+	size_t i;
 	for (i = 1; i <= r; i++) {
 		A = rotl32((A ^ B), B) + *(S + 2*i);
 		B = rotl32((B ^ A), A) + *(S + 2*i + 1);
 	}
         *ctext = A;
 	*(ctext + 1) = B;
-	return ctext;
 }
 
-uint32_t *decrypt32(uint32_t *ctext, uint32_t *S, uint16_t r)
+void decrypt32(uint32_t *ctext, uint32_t *ptext, uint32_t *S, size_t r)
 {
-	/* Takes a block of two ciphertext words and returns a block of two
-	 * plaintext words. 
+	/* Takes two pointers to blocks of two plaintext words and places the deciphered ciphertext
+	 * into the plaintext block. 
 	 */
 	uint32_t A, B;
 	A = *ctext;
 	B = *(ctext + 1);
-	static uint32_t *ptext;
-	ptext = malloc(sizeof(uint32_t)*2);
-	uint16_t i;
+	size_t i;
 	for (i = r; i > 0; i--) {
 		B = rotr32((B - *(S + 2*i + 1)), A)^A;
 		A = rotr32((A - *(S + 2*i)), B)^B;
@@ -288,40 +277,34 @@ uint32_t *decrypt32(uint32_t *ctext, uint32_t *S, uint16_t r)
 	A = A - *S;
         *ptext = A;
 	*(ptext + 1) = B;
-	return ptext;
 }
 
-uint64_t *encrypt64(uint64_t *ptext, uint64_t *S, uint16_t r)
+void encrypt64(uint64_t *ptext, uint64_t *ctext, uint64_t *S, size_t r)
 {
-	/* Takes a block of two plaintext words and returns a block of two
-	 * ciphertext words. 
+	/* Takes two pointers to blocks of two plaintext words and places the enciphered plaintext
+	 * into the ciphertext block. 
 	 */
 	uint64_t A, B;
-	static uint64_t *ctext;
-	ctext = malloc(sizeof(uint64_t)*2);
 	A = * ptext +      * S;
 	B = *(ptext + 1) + *(S + 1);
-	uint16_t i;
+	size_t i;
 	for (i = 1; i <= r; i++) {
 		A = rotl64((A ^ B), B) + *(S + 2*i);
 		B = rotl64((B ^ A), A) + *(S + 2*i + 1);
 	}
         *ctext = A;
 	*(ctext + 1) = B;
-	return ctext;
 }
 
-uint64_t *decrypt64(uint64_t *ctext, uint64_t *S, uint16_t r)
+void decrypt64(uint64_t *ctext, uint64_t *ptext, uint64_t *S, size_t r)
 {
-	/* Takes a block of two ciphertext words and returns a block of two
-	 * plaintext words. 
+	/* Takes two pointers to blocks of two plaintext words and places the deciphered ciphertext
+	 * into the plaintext block. 
 	 */
 	uint64_t A, B;
 	A = *ctext;
 	B = *(ctext + 1);
-	static uint64_t *ptext;
-	ptext = malloc(sizeof(uint64_t)*2);
-	uint16_t i;
+	size_t i;
 	for (i = r; i > 0; i--) {
 		B = rotr64((B - *(S + 2*i + 1)), A)^A;
 		A = rotr64((A - *(S + 2*i)), B)^B;
@@ -330,6 +313,5 @@ uint64_t *decrypt64(uint64_t *ctext, uint64_t *S, uint16_t r)
 	A = A - *S;
         *ptext = A;
 	*(ptext + 1) = B;
-	return ptext;
 }
 

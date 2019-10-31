@@ -20,8 +20,8 @@ int main(int argc, char ** argv)
 
 	indata data;
 	data = read_input(instream); 
-	switch bsize{
-		case mode_32:
+	switch wsize{
+		case mode_16:
 
 
 	free_indata(data);
