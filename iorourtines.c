@@ -174,7 +174,7 @@ data64 prepare_data64(indata input, padmode_t padmode, opmode_t opmode)
 
 	size_t pad;
 	if (padmode == CTS || opmode == DECRYPT)
-		pad = ((size_t) 16) - (((input.inlen - 1) % 16) + 1);
+		pad = ((size_t) 16) - (((input.inlen - 1) % 16) + 1); 
        		//shouldn't pad in decrypt mode where encryption used PKCS7 as error check above guarantees last block will be full
 	else
 		pad = ((size_t) 16) - (input.inlen % 16);
