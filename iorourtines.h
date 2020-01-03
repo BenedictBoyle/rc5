@@ -6,9 +6,10 @@
 #include "crypt.h"
 
 typedef struct {
-	uint8_t *inbuf;
-	size_t inlen;
-} indata;
+	uint8_t *bbuf;
+	size_t blen;
+	size_t pad;
+} bdata;
 
 typedef struct {
 	uint8_t *keyBytes;
@@ -31,13 +32,13 @@ typedef struct {
 } data64;
 
 indata read_input(FILE *instream);
-void free_indata(indata);
-data16 prepare_data16(indata input, padmode_t padmode, opmode_t opmode);
-data32 prepare_data32(indata input, padmode_t padmode, opmode_t opmode);
-data64 prepare_data64(indata input, padmode_t padmode, opmode_t opmode);
-uint8_t output_data16(data16 output);
-uint8_t output_data32(data32 output);
-uint8_t output_data64(data64 output);
+void free_indata(bdata);
+data16 prepare_data16(bdata input, padmode_t padmode, opmode_t opmode);
+data32 prepare_data32(bdata input, padmode_t padmode, opmode_t opmode);
+data64 prepare_data64(bdata input, padmode_t padmode, opmode_t opmode);
+bdata output_data16(data16 output);
+bdata output_data32(data32 output);
+bdata output_data64(data64 output);
 
 #endif
 
