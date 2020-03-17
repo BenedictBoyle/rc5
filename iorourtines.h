@@ -8,7 +8,6 @@
 typedef struct {
 	uint8_t *bbuf;
 	size_t blen;
-	size_t pad;
 } bdata;
 
 typedef struct {
@@ -19,16 +18,19 @@ typedef struct {
 typedef struct {
 	uint16_t *text;
 	size_t len;
+	size_t pad; //Need to track for decrpyting in CTS mode
 } data16;
 
 typedef struct {
 	uint32_t *text;
 	size_t len;
+	size_t pad;
 } data32;
 
 typedef struct {
 	uint64_t *text;
 	size_t len;
+	size_t pad;
 } data64;
 
 indata read_input(FILE *instream);

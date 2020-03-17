@@ -38,7 +38,6 @@ bdata read_input(FILE *instream)
 
 	ret.bbuf = buf;
 	ret.blen = len;
-	ret.pad = 0;
 
 	return ret;
 }
@@ -71,7 +70,7 @@ data16 prepare_data16(bdata *input, padmode_t padmode, opmode_t opmode)
 	else
 		pad = ((size_t) 4) - (input.blen % 4); 
 	input->blen += pad;
-	input->pad = pad;
+	ret.pad = pad;
 	input->bbuf = realloc(input->bbuf, input->blen);
 	if (input->bbuf == NULL) {
 		fprintf(stderr, "Unable to allocate memory for padding input in data preparation routine. Terminating.\n");
@@ -127,7 +126,7 @@ data32 prepare_data32(bdata *input, padmode_t padmode, opmode_t opmode)
 	else
 		pad = ((size_t) 8) - (input->blen % 8);
 	input->blen += pad;
-	input->pad = pad;
+	ret.pad = pad;
 	input->bbuf = realloc(input->bbuf, input->blen);
 	if (input->bbuf == NULL) {
 		fprintf(stderr, "Unable to allocate memory for padding input in data preparation routine. Terminating.\n");
@@ -186,7 +185,7 @@ data64 prepare_data64(bdata *input, padmode_t padmode, opmode_t opmode)
 	else
 		pad = ((size_t) 16) - (input->blen % 16);
 	input->blen += pad;
-	input->pad = pad;
+	ret.pad = pad;
 	input->bbuf = realloc(input->bbuf, input->blen);
 	if (input->bbuf == NULL) {
 		fprintf(stderr, "Unable to allocate memory for padding input in data preparation routine. Terminating.\n");
