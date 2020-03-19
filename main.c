@@ -1,4 +1,5 @@
 #include "primitives.h"
+#include "crypt.h"
 #include "ioroutines.h"
 
 void usage(void)
@@ -18,12 +19,13 @@ int main(int argc, char ** argv)
 	//prepare input data for processing according to parameters
 	FILE * instream; //set instream as a file or stdin
 
-	indata data;
+	bdata data;
 	data = read_input(instream); 
 	switch wsize{
 		case mode_16:
 
 
-	free_indata(data);
+			//need to set up key in here and build method for freeing key memory
+	free_bdata(data);
 	return EXIT_SUCCESS;
 }
