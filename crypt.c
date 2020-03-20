@@ -1,6 +1,5 @@
 #include "crypt.h"
 
-//make sure where CTS mode is used, outputting char array from dataNN after encryption/decryption takes inlen into account
 void rc5_ecb_encrypt16(data16 ptext, data16 ctext, uint16_t *ksched, size_t rounds, padmode_t padmode)
 {
 	size_t i, j;
@@ -69,7 +68,7 @@ void rc5_ecb_encrypt32(data32 ptext, data32 ctext, uint32_t *ksched, size_t roun
 	}
 }
 
-void rc5_ecb_encrypt64(data64 ptext, data64 ctext, uint32_t *ksched, size_t rounds, padmode_t padmode)
+void rc5_ecb_encrypt64(data64 ptext, data64 ctext, uint64_t *ksched, size_t rounds, padmode_t padmode)
 {
 	size_t i, j;
 	uint64_t temp[2];
@@ -253,7 +252,7 @@ void rc5_cbc_encrypt32(data32 ptext, data32 ctext, uint32_t *ksched, size_t roun
 	}
 }
 
-void rc5_cbc_encrypt64(data64 ptext, data64 ctext, uint32_t *ksched, size_t rounds, padmode_t padmode)
+void rc5_cbc_encrypt64(data64 ptext, data64 ctext, uint64_t *ksched, size_t rounds, padmode_t padmode)
 {
 	size_t i;
 	uint64_t temp[2];
@@ -286,14 +285,14 @@ void rc5_cbc_decrypt16(data16 ctext, data16 ptext, uint16_t *ksched, size_t roun
 	*(ptext.text + 1) ^= *(ctext.IV + 1);
 	for (i = 2; i < ctext.len - 4; i += 2) { 
 		decrypt16(*(ctext.text + i), *(ptext.text + i), *ksched, rounds);
-		*(ptext.text + i) ^= *(ctext.text + i - 2)
-		*(ptext.text + i + 1) ^= *(ctext.text + i - 1)
+		*(ptext.text + i) ^= *(ctext.text + i - 2);
+		*(ptext.text + i + 1) ^= *(ctext.text + i - 1);
 	}
 	if (padmode == PKCS7) {
 		for ( ; i < ctext.len; i+= 2) {
 			decrypt16(*(ctext.text + i), *(ptext.text + i), *ksched, rounds);
-			*(ptext.text + i) ^= *(ctext.text + i - 2)
-			*(ptext.text + i + 1) ^= *(ctext.text + i - 1)
+			*(ptext.text + i) ^= *(ctext.text + i - 2);
+			*(ptext.text + i + 1) ^= *(ctext.text + i - 1);
 		}
 	}
 	else {
@@ -331,14 +330,14 @@ void rc5_cbc_decrypt32(data32 ctext, data32 ptext, uint32_t *ksched, size_t roun
 	*(ptext.text + 1) ^= *(ctext.IV + 1);
 	for (i = 2; i < ctext.len - 4; i += 2) { 
 		decrypt32(*(ctext.text + i), *(ptext.text + i), *ksched, rounds);
-		*(ptext.text + i) ^= *(ctext.text + i - 2)
-		*(ptext.text + i + 1) ^= *(ctext.text + i - 1)
+		*(ptext.text + i) ^= *(ctext.text + i - 2);
+		*(ptext.text + i + 1) ^= *(ctext.text + i - 1);
 	}
 	if (padmode == PKCS7) {
 		for ( ; i < ctext.len; i+= 2) {
 			decrypt32(*(ctext.text + i), *(ptext.text + i), *ksched, rounds);
-			*(ptext.text + i) ^= *(ctext.text + i - 2)
-			*(ptext.text + i + 1) ^= *(ctext.text + i - 1)
+			*(ptext.text + i) ^= *(ctext.text + i - 2);
+			*(ptext.text + i + 1) ^= *(ctext.text + i - 1);
 		}
 	}
 	else {
@@ -376,14 +375,14 @@ void rc5_cbc_decrypt64(data64 ctext, data64 ptext, uint64_t *ksched, size_t roun
 	*(ptext.text + 1) ^= *(ctext.IV + 1);
 	for (i = 2; i < ctext.len - 4; i += 2) { 
 		decrypt64(*(ctext.text + i), *(ptext.text + i), *ksched, rounds);
-		*(ptext.text + i) ^= *(ctext.text + i - 2)
-		*(ptext.text + i + 1) ^= *(ctext.text + i - 1)
+		*(ptext.text + i) ^= *(ctext.text + i - 2);
+		*(ptext.text + i + 1) ^= *(ctext.text + i - 1);
 	}
 	if (padmode == PKCS7) {
 		for ( ; i < ctext.len; i+= 2) {
 			decrypt64(*(ctext.text + i), *(ptext.text + i), *ksched, rounds);
-			*(ptext.text + i) ^= *(ctext.text + i - 2)
-			*(ptext.text + i + 1) ^= *(ctext.text + i - 1)
+			*(ptext.text + i) ^= *(ctext.text + i - 2);
+			*(ptext.text + i + 1) ^= *(ctext.text + i - 1);
 		}
 	}
 	else {

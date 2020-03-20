@@ -21,7 +21,7 @@ bdata read_input(FILE *instream)
 		       tempbuf = realloc(buf, bufsize);
 		       if (tempbuf == NULL) {
 			       ungetc(c, instream);
-			       len = 0
+			       len = 0;
 			       fprintf(stderr, "Unable to allocate extra memory to read large input.\n");
 		       }
 		       buf = tempbuf;
@@ -29,12 +29,14 @@ bdata read_input(FILE *instream)
 	       *(buf + len++) = (uint8_t) c;
 	}	       
 
-	if (len == 0)
+	if (len == 0) {
 		free(buf);
+		fprintf(stderr, "Error - no data read. Terminating.\n");
+	}
 
 	tempbuf = realloc(buf, len);
 	if (tempbuf == NULL) {
-		fprintf(stderr, "Error shrinking memory to size.\n");
+		fprintf(stderr, "Error shrinking memory to size after reading input.\n");
 	}
 	buf = tempbuf;
 
@@ -50,6 +52,7 @@ void free_bdata(bdata data)
 	for (i = 0; i < data.blen; i++) {
 		*(data.bbuf + i) = 0;
 	}
+	data.blen = 0;
 	free(data.bbuf);
 }
 
@@ -59,6 +62,7 @@ data16 prepare_data16(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 	 */
 
 	data16 ret;
+	ret.text = NULL;
 	size_t IVoffset = 0;
 
 	if (opmode == DECRYPT) {
@@ -109,7 +113,7 @@ data16 prepare_data16(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 		*(ret.IV)     = (*(input.bbuf)     << 8) | *(input.bbuf + 1);
 		*(ret.IV + 1) = (*(input.bbuf + 2) << 8) | *(input.bbuf + 3);
 	}
-	else if ( cmode == CBC && opmode = ENCRYPT ) {
+	else if ( cmode == CBC && opmode == ENCRYPT ) {
 		ret.IV = malloc(2*sizeof(uint16_t));
 		if (ret.text == NULL) {
 			fprintf(stderr, "Unable to allocate memory for IV in data preparation routine. Terminating.\n");
@@ -117,7 +121,7 @@ data16 prepare_data16(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 			return ret; //make sure to handle error in main
 		}
 		if (getrandom(*ret.IV, 4, GRND_RANDOM) != 4) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
-			fprintf(stderr, '"Unable to acquire cryptographically random bytes to generate IV. Terminating.\n");
+			fprintf(stderr, "Unable to acquire cryptographically random bytes to generate IV. Terminating.\n");
 			ret.len = 0;
 			return ret;
 		}
@@ -129,8 +133,6 @@ data16 prepare_data16(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 		ret.len = 0;
 		return ret; //make sure to handle error in main
 	}
-
-	size_t i;
 
 	for (i = 0; i < ret.len; i++) {
 		*(ret.text + i) = ((*(input.bbuf + 2*IVoffset + 2*i)) << 8) | (*(input.bbuf + 2*IVoffset + 2*i + 1));
@@ -145,6 +147,7 @@ data32 prepare_data32(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 	 */
 
 	data32 ret;
+	ret.text = NULL;
 	size_t IVoffset = 0;
 
 	if (opmode == DECRYPT) {
@@ -193,9 +196,9 @@ data32 prepare_data32(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 		*(ret.IV)     = (*(input.bbuf)     << 24) | (*(input.bbuf + 1) << 16) | (*(input.bbuf + 2) << 8) | *(input.bbuf + 3);
 		*(ret.IV + 1) = (*(input.bbuf + 4) << 24) | (*(input.bbuf + 5) << 16) | (*(input.bbuf + 6) << 8) | *(input.bbuf + 7);
 	}
-	else if ( cmode == CBC && opmode = ENCRYPT ) {
+	else if ( cmode == CBC && opmode == ENCRYPT ) {
 		if (getrandom(*ret.IV, 8, GRND_RANDOM) != 8) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
-			fprintf(stderr, '"Unable to acquire cryptographically random bytes to generate IV. Terminating.\n");
+			fprintf(stderr, "Unable to acquire cryptographically random bytes to generate IV. Terminating.\n");
 			ret.len = 0;
 			return ret;
 		}
@@ -207,8 +210,6 @@ data32 prepare_data32(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 		ret.len = 0;
 		return ret; //make sure to handle error in main
 	}
-
-	size_t i;
 
 	for (i = 0; i < ret.len; i++) 
 		*(ret.text + i) = (( *(input.bbuf + 4*IVoffset + 4*i    )) << 24) | \
@@ -225,6 +226,7 @@ data64 prepare_data64(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 	 */
 
 	data64 ret;
+	ret.text = NULL;
 	size_t IVoffset = 0;
 
 	if (opmode == DECRYPT) {
@@ -270,29 +272,25 @@ data64 prepare_data64(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 			ret.len = 0;
 			return ret; //make sure to handle error in main
 		}
-		*(ret.IV)     = (*(input.bbuf)     << 56)  | (*(input.bbuf + 1) << 48)  | (*(input.bbuf + 2) << 40)  | *(input.bbuf + 32) \
-				(*(input.bbuf + 4) << 24)  | (*(input.bbuf + 5) << 16)  | (*(input.bbuf + 6) << 8 )  | *(input.bbuf + 7 ); 
-		*(ret.IV + 1) = (*(input.bbuf + 8) << 56)  | (*(input.bbuf + 9) << 48)  | (*(input.bbuf + 10) << 40) | *(input.bbuf + 32) \
-				(*(input.bbuf + 12) << 24) | (*(input.bbuf + 13) << 16) | (*(input.bbuf + 14) << 8)  | *(input.bbuf + 15);
+		*(ret.IV)     = ((*(input.bbuf)     ) << 56) | ((*(input.bbuf + 1) ) << 48) | ((*(input.bbuf + 2) ) << 40) | ((*(input.bbuf + 3)) << 32) |\
+				((*(input.bbuf + 4) ) << 24) | ((*(input.bbuf + 5) ) << 16) | ((*(input.bbuf + 6) ) << 8 ) | (*(input.bbuf + 7 )); 
+		*(ret.IV + 1) = ((*(input.bbuf + 8) ) << 56) | ((*(input.bbuf + 9) ) << 48) | ((*(input.bbuf + 10)) << 40) | ((*(input.bbuf + 11)) << 32) |\
+				((*(input.bbuf + 12)) << 24) | ((*(input.bbuf + 13)) << 16) | ((*(input.bbuf + 14)) << 8 ) | (*(input.bbuf + 15));
 	}
-	else if ( cmode == CBC && opmode = ENCRYPT ) {
+	else if ( cmode == CBC && opmode == ENCRYPT ) {
 		if (getrandom(*ret.IV, 16, GRND_RANDOM) != 16) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
-			fprintf(stderr, '"Unable to acquire cryptographically random bytes to generate IV. Terminating.\n");
+			fprintf(stderr, "Unable to acquire cryptographically random bytes to generate IV. Terminating.\n");
 			ret.len = 0;
 			return ret;
 		}
 	}
-
-	}
 	ret.len -= IVoffset;
-	ret.text = malloc(ret.len*sizeof(uint64));
+	ret.text = malloc(ret.len*sizeof(uint64_t));
 	if (ret.text == NULL) {
 		fprintf(stderr, "Unable to allocate memory in data preparation routine. Terminating.\n");
 		ret.len = 0;
 		return ret; //make sure to handle error in main
 	}
-
-	size_t i;
 
 	for (i = 0; i < ret.len; i++) 
 		*(ret.text + i) = ((*( input.bbuf + 8*IVoffset + 8*i    )) << 56) | \
@@ -318,13 +316,14 @@ data16 prepare_output16(data16 input, padmode_t padmode, cmode_t cmode)
 	if (cmode == CBC) {
 		ret.IV = input.IV;
 	}
-	ret.text = malloc(ret.len*sizeof(uint16));
+	ret.text = malloc(ret.len*sizeof(uint16_t));
 	if (ret.text == NULL) {
 		fprintf(stderr, "Unable to allocate memory in output preparation routine. Terminating.\n");
 		ret.len = 0;
 		return ret; //make sure to handle error in main
 	}
-
+	ret.pad = input.pad;
+	return ret;
 }
 
 data32 prepare_output32(data32 input, padmode_t padmode, cmode_t cmode)
@@ -338,13 +337,14 @@ data32 prepare_output32(data32 input, padmode_t padmode, cmode_t cmode)
 	if (cmode == CBC) {
 		ret.IV = input.IV;
 	}
-	ret.text = malloc(ret.len*sizeof(uint32));
+	ret.text = malloc(ret.len*sizeof(uint32_t));
 	if (ret.text == NULL) {
 		fprintf(stderr, "Unable to allocate memory in output preparation routine. Terminating.\n");
 		ret.len = 0;
 		return ret; //make sure to handle error in main
 	}
-
+	ret.pad = input.pad;
+	return ret;
 }
 
 data64 prepare_output64(data64 input, padmode_t padmode, cmode_t cmode)
@@ -358,13 +358,14 @@ data64 prepare_output64(data64 input, padmode_t padmode, cmode_t cmode)
 	if (cmode == CBC) {
 		ret.IV = input.IV;
 	}
-	ret.text = malloc(ret.len*sizeof(uint64));
+	ret.text = malloc(ret.len*sizeof(uint64_t));
 	if (ret.text == NULL) {
 		fprintf(stderr, "Unable to allocate memory in output preparation routine. Terminating.\n");
 		ret.len = 0;
 		return ret; //make sure to handle error in main
 	}
-
+	ret.pad = input.pad;
+	return ret;
 }
 
 bdata output_data16(data16 output, opmode_t opmode, padmode_t padmode, cmode_t cmode)
@@ -388,7 +389,7 @@ bdata output_data16(data16 output, opmode_t opmode, padmode_t padmode, cmode_t c
 		ret.blen = 0;
 		return ret;
 	}
-	if (opmode == ENCRYPT && cmode = CBC) {
+	if (opmode == ENCRYPT && cmode == CBC) {
 		*(ret.bbuf    ) = (*(output.IV               )       >> 8              ) ^ 0xff;
 		*(ret.bbuf + 1) = (*(output.IV               )                         ) ^ 0xff;
 		*(ret.bbuf + 2) = (*(output.IV                + 1  ) >> 8              ) ^ 0xff;
@@ -410,7 +411,7 @@ bdata output_data16(data16 output, opmode_t opmode, padmode_t padmode, cmode_t c
 		}
 		else {
 			ret.blen -= pad;
-			ret.bbuf = realloc(ret.blen);
+			ret.bbuf = realloc(ret.bbuf, ret.blen);
 		}
 	}
 	return ret;
@@ -437,7 +438,7 @@ bdata output_data32(data32 output, opmode_t opmode, padmode_t padmode, cmode_t c
 		ret.blen = 0;
 		return ret;
 	}
-	if (opmode == ENCRYPT && cmode = CBC) {
+	if (opmode == ENCRYPT && cmode == CBC) {
 		*(ret.bbuf    ) = (*(output.IV                     ) >> 24              ) ^ 0xff;
 		*(ret.bbuf + 1) = (*(output.IV                     ) >> 16              ) ^ 0xff;
 		*(ret.bbuf + 2) = (*(output.IV                     ) >>  8              ) ^ 0xff;
@@ -463,7 +464,7 @@ bdata output_data32(data32 output, opmode_t opmode, padmode_t padmode, cmode_t c
 		}
 		else {
 			ret.blen -= pad;
-			ret.bbuf = realloc(ret.blen);
+			ret.bbuf = realloc(ret.bbuf, ret.blen);
 		}
 	}
 	return ret;
@@ -490,7 +491,7 @@ bdata output_data64(data64 output, opmode_t opmode, padmode_t padmode, cmode_t c
 		ret.blen = 0;
 		return ret;
 	}
-	if (opmode == ENCRYPT && cmode = CBC) {
+	if (opmode == ENCRYPT && cmode == CBC) {
 		*(ret.bbuf    )  = (*(output.IV                     ) >> 56              ) ^ 0xff;
 		*(ret.bbuf + 1)  = (*(output.IV                     ) >> 48              ) ^ 0xff;
 		*(ret.bbuf + 2)  = (*(output.IV                     ) >> 40              ) ^ 0xff;
@@ -524,44 +525,47 @@ bdata output_data64(data64 output, opmode_t opmode, padmode_t padmode, cmode_t c
 		}
 		else {
 			ret.blen -= pad;
-			ret.bbuf = realloc(ret.blen);
+			ret.bbuf = realloc(ret.bbuf, ret.blen);
 		}
 	}
 	return ret;
 }
 
-void free_data16(data16 data, cmode_t cmode)
+void free_data16(data16 data, cmode_t cmode, dmode_t dmode)
 {
 	size_t i;
 	for (i = 0; i < data.len; i++) {
 		*(data.text + i) = 0;
 	}
 	free(data.text);
-	if (cmode == CBC) {
+	data.len = 0;
+	if (cmode == CBC && dmode == DATA) {
 		free(data.IV);
 	}
 }
 
-void free_data32(data32 data, cmode_t cmode)
+void free_data32(data32 data, cmode_t cmode, dmode_t dmode)
 {
 	size_t i;
 	for (i = 0; i < data.len; i++) {
 		*(data.text + i) = 0;
 	}
 	free(data.text);
-	if (cmode == CBC) {
+	data.len = 0;
+	if (cmode == CBC && dmode == DATA) {
 		free(data.IV);
 	}
 }
 
-void free_data64(data64 data, cmode_t cmode)
+void free_data64(data64 data, cmode_t cmode, dmode_t dmode)
 {
 	size_t i;
 	for (i = 0; i < data.len; i++) {
 		*(data.text + i) = 0;
 	}
 	free(data.text);
-	if (cmode == CBC) {
+	data.len = 0;
+	if (cmode == CBC && dmode == DATA) {
 		free(data.IV);
 	}
 }

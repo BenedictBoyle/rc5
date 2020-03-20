@@ -62,8 +62,11 @@ uint64_t rotr64(uint64_t val, unsigned int rot)
 	return (val >> rot | val << ( (-rot) & mask));
 }
 
-uint16_t *key_expand16(uint8_t *K, size_t b, size_t r)
+data16 key_expand16(uint8_t *K, size_t b, size_t r)
 {
+	data16 ret;
+	ret.IV = NULL;
+	ret.pad = 0;
 	//Copy K[0],...,K[b-1] into L[0],...,L[ceil((b-1)/2)]
 
 	float temp = ((float) b)/2.0;
@@ -82,7 +85,7 @@ uint16_t *key_expand16(uint8_t *K, size_t b, size_t r)
 	 * Q16
 	 */
 
-	static uint16_t *S;
+	uint16_t *S;
 	S = malloc(sizeof(uint16_t)*t);
 	//Free in main routine
 	*S = P16;
@@ -104,11 +107,16 @@ uint16_t *key_expand16(uint8_t *K, size_t b, size_t r)
 		*(L + i) = 0;
 	//zero first to avoid potentially leaking secret
 	free(L);
-	return S;
+	ret.len = t;
+	ret.text = S;
+	return ret;
 }
 
-uint32_t *key_expand32(uint8_t *K, size_t b, size_t r)
+data32 key_expand32(uint8_t *K, size_t b, size_t r)
 {
+	data32 ret;
+	ret.IV = NULL;
+	ret.pad = 0;
 	//Copy K[0],...,K[b-1] into L[0],...,L[ceil((b-1)/4)]
 
 	float temp = ((float) b)/4.0;
@@ -152,11 +160,16 @@ uint32_t *key_expand32(uint8_t *K, size_t b, size_t r)
 		*(L + i) = 0;
 	//zero first to avoid potentially leaking secret
 	free(L);
-	return S;
+	ret.len = t;
+	ret.text = S;
+	return ret;
 }
 
-uint64_t *key_expand64(uint8_t *K, size_t b, size_t r)
+data64 key_expand64(uint8_t *K, size_t b, size_t r)
 {
+	data64 ret;
+	ret.IV = NULL;
+	ret.pad = 0;
 	//Copy K[0],...,K[b-1] into L[0],...,L[ceil((b-1)/8)]
 
 	float temp = ((float) b)/8.0;
@@ -204,7 +217,9 @@ uint64_t *key_expand64(uint8_t *K, size_t b, size_t r)
 		*(L + i) = 0;
 	//zero first to avoid potentially leaking secret
 	free(L); 
-	return S;
+	ret.len = t;
+	ret.text = S;
+	return ret;
 }
 
 void encrypt16(uint16_t *ptext, uint16_t *ctext, uint16_t *S, size_t r)
