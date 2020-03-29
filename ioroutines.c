@@ -120,7 +120,7 @@ data16 prepare_data16(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 			ret.len = 0;
 			return ret; //make sure to handle error in main
 		}
-		if (getrandom(*ret.IV, 4, GRND_RANDOM) != 4) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
+		if (getrandom(ret.IV, 4, GRND_RANDOM) != 4) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
 			fprintf(stderr, "Unable to acquire cryptographically random bytes to generate IV. Terminating.\n");
 			ret.len = 0;
 			return ret;
@@ -197,7 +197,7 @@ data32 prepare_data32(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 		*(ret.IV + 1) = (*(input.bbuf + 4) << 24) | (*(input.bbuf + 5) << 16) | (*(input.bbuf + 6) << 8) | *(input.bbuf + 7);
 	}
 	else if ( cmode == CBC && opmode == ENCRYPT ) {
-		if (getrandom(*ret.IV, 8, GRND_RANDOM) != 8) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
+		if (getrandom(ret.IV, 8, GRND_RANDOM) != 8) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
 			fprintf(stderr, "Unable to acquire cryptographically random bytes to generate IV. Terminating.\n");
 			ret.len = 0;
 			return ret;
@@ -272,13 +272,17 @@ data64 prepare_data64(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 			ret.len = 0;
 			return ret; //make sure to handle error in main
 		}
-		*(ret.IV)     = ((*(input.bbuf)     ) << 56) | ((*(input.bbuf + 1) ) << 48) | ((*(input.bbuf + 2) ) << 40) | ((*(input.bbuf + 3)) << 32) |\
-				((*(input.bbuf + 4) ) << 24) | ((*(input.bbuf + 5) ) << 16) | ((*(input.bbuf + 6) ) << 8 ) | (*(input.bbuf + 7 )); 
-		*(ret.IV + 1) = ((*(input.bbuf + 8) ) << 56) | ((*(input.bbuf + 9) ) << 48) | ((*(input.bbuf + 10)) << 40) | ((*(input.bbuf + 11)) << 32) |\
-				((*(input.bbuf + 12)) << 24) | ((*(input.bbuf + 13)) << 16) | ((*(input.bbuf + 14)) << 8 ) | (*(input.bbuf + 15));
+		*(ret.IV)     = (((uint64_t) (*(input.bbuf     ))) << 56) | (((uint64_t) (*(input.bbuf + 1 ))) << 48) |\
+				(((uint64_t) (*(input.bbuf + 2 ))) << 40) | (((uint64_t) (*(input.bbuf + 3 ))) << 32) |\
+				(((uint64_t) (*(input.bbuf + 4 ))) << 24) | (((uint64_t) (*(input.bbuf + 5 ))) << 16) |\
+			       	(((uint64_t) (*(input.bbuf + 6 ))) <<  8) | (((uint64_t) (*(input.bbuf + 7 ))));
+		*(ret.IV + 1) = (((uint64_t) (*(input.bbuf + 8 ))) << 56) | (((uint64_t) (*(input.bbuf + 9 ))) << 48) |\
+			       	(((uint64_t) (*(input.bbuf + 10))) << 40) | (((uint64_t) (*(input.bbuf + 11))) << 32) |\
+				(((uint64_t) (*(input.bbuf + 12))) << 24) | (((uint64_t) (*(input.bbuf + 13))) << 16) |\
+			       	(((uint64_t) (*(input.bbuf + 14))) <<  8) | (((uint64_t) (*(input.bbuf + 15))));
 	}
 	else if ( cmode == CBC && opmode == ENCRYPT ) {
-		if (getrandom(*ret.IV, 16, GRND_RANDOM) != 16) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
+		if (getrandom(ret.IV, 16, GRND_RANDOM) != 16) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
 			fprintf(stderr, "Unable to acquire cryptographically random bytes to generate IV. Terminating.\n");
 			ret.len = 0;
 			return ret;
@@ -293,14 +297,14 @@ data64 prepare_data64(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 	}
 
 	for (i = 0; i < ret.len; i++) 
-		*(ret.text + i) = ((*( input.bbuf + 8*IVoffset + 8*i    )) << 56) | \
-				   ((*(input.bbuf + 8*IVoffset + 8*i + 1)) << 48) | \
-				   ((*(input.bbuf + 8*IVoffset + 8*i + 2)) << 40) | \
-				   ((*(input.bbuf + 8*IVoffset + 8*i + 3)) << 32) | \
-				   ((*(input.bbuf + 8*IVoffset + 8*i + 4)) << 24) | \
-				   ((*(input.bbuf + 8*IVoffset + 8*i + 5)) << 16) | \
-				   ((*(input.bbuf + 8*IVoffset + 8*i + 6)) << 8 ) | \
-				   ((*(input.bbuf + 8*IVoffset + 8*i + 7))      );
+		*(ret.text + i) = (((uint64_t) (*( input.bbuf + 8*IVoffset + 8*i    ))) << 56) | \
+				   (((uint64_t) (*(input.bbuf + 8*IVoffset + 8*i + 1))) << 48) | \
+				   (((uint64_t) (*(input.bbuf + 8*IVoffset + 8*i + 2))) << 40) | \
+				   (((uint64_t) (*(input.bbuf + 8*IVoffset + 8*i + 3))) << 32) | \
+				   (((uint64_t) (*(input.bbuf + 8*IVoffset + 8*i + 4))) << 24) | \
+				   (((uint64_t) (*(input.bbuf + 8*IVoffset + 8*i + 5))) << 16) | \
+				   (((uint64_t) (*(input.bbuf + 8*IVoffset + 8*i + 6))) <<  8) | \
+				   (((uint64_t) (*(input.bbuf + 8*IVoffset + 8*i + 7)))      );
 
 	return ret;
 }
@@ -404,7 +408,7 @@ bdata output_data16(data16 output, opmode_t opmode, padmode_t padmode, cmode_t c
 		pad = 0;
 		j = 4;
 		while (pad == 0 && j > 0) {
-			pad = unpad(*(ret.bbuf + ret.blen - j), j, j);
+			pad = unpad((ret.bbuf + ret.blen - j), j, j);
 		}
 		if (pad == 0) {
 			fprintf(stderr, "Warning - decrypted text does not appear to be PKCS7 padded\n");
@@ -457,7 +461,7 @@ bdata output_data32(data32 output, opmode_t opmode, padmode_t padmode, cmode_t c
 		pad = 0;
 		j = 8;
 		while (pad == 0 && j > 0) {
-			pad = unpad(*(ret.bbuf + ret.blen - j), j, j);
+			pad = unpad((ret.bbuf + ret.blen - j), j, j);
 		}
 		if (pad == 0) {
 			fprintf(stderr, "Warning - decrypted text does not appear to be PKCS7 padded\n");
@@ -518,7 +522,7 @@ bdata output_data64(data64 output, opmode_t opmode, padmode_t padmode, cmode_t c
 		pad = 0;
 		j = 16;
 		while (pad == 0 && j > 0) {
-			pad = unpad(*(ret.bbuf + ret.blen - j), j, j);
+			pad = unpad((ret.bbuf + ret.blen - j), j, j);
 		}
 		if (pad == 0) {
 			fprintf(stderr, "Warning - decrypted text does not appear to be PKCS7 padded\n");

@@ -1,7 +1,7 @@
 #Makefile for toy rc5 program
 CC = gcc
-CFLAGS = -Wall
-LDFLAGS = -Wall
+CFLAGS = -g -Wall 
+LDFLAGS = -g -Wall 
 RM=rm -f
 LIBS = -lm
 
