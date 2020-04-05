@@ -20,9 +20,9 @@ typedef enum {
 } padmode_t;
 
 typedef enum {
-	mode_16,
-	mode_32,
-	mode_64
+	mode_16 = 16,
+	mode_32 = 32,
+	mode_64 = 64
 } wsize_t;
 
 void rc5_ecb_encrypt16(data16 ptext, data16 ctext, uint16_t *ksched, size_t rounds, padmode_t padmode);

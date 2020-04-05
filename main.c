@@ -50,7 +50,8 @@ int main(int argc, char ** argv)
 		{"rounds",      required_argument, NULL,     'r'    },
 		//{"encrypt",     no_argument,       &opmode,  ENCRYPT},
 		{"encrypt",     no_argument,       NULL,     'e'    },
-		{"decrypt",     no_argument,       &opmode,  DECRYPT},
+		//{"decrypt",     no_argument,       &opmode,  DECRYPT},
+		{"decrypt",     no_argument,       NULL,     'd'    },
 		{"cts",         no_argument,       &padmode, CTS    },
 		{"CTS",         no_argument,       &padmode, CTS    },
 		{"ecb",         no_argument,       &cmode,   ECB    },
@@ -156,7 +157,13 @@ int main(int argc, char ** argv)
 	switch (wsize) {
 		case mode_16:
 			pinput16 = prepare_data16(input, padmode, opmode, cmode); 
+			if (pinput16.len == 0) {
+				exit(EXIT_FAILURE);
+			}
 			poutput16 = prepare_output16(pinput16, padmode,  cmode); 
+			if (poutput16.len == 0) {
+				exit(EXIT_FAILURE);
+			}
 			keysched16 = key_expand16(key.bbuf, key.blen, num_rounds);
 			if (opmode == ENCRYPT) {
 				if (cmode == ECB) {
@@ -178,9 +185,16 @@ int main(int argc, char ** argv)
 			free_data16(pinput16, cmode, DATA);
 			free_data16(poutput16, cmode, DATA);
 			free_data16(keysched16, cmode, KEY);
+			break;
 		case mode_32:
 			pinput32 = prepare_data32(input, padmode, opmode, cmode);
+			if (pinput32.len == 0) {
+				exit(EXIT_FAILURE);
+			}
 			poutput32 = prepare_output32(pinput32, padmode, cmode); 
+			if (poutput32.len == 0) {
+				exit(EXIT_FAILURE);
+			}
 			keysched32 = key_expand32(key.bbuf, key.blen, num_rounds);
 			if (opmode == ENCRYPT) {
 				if (cmode == ECB) {
@@ -202,9 +216,16 @@ int main(int argc, char ** argv)
 			free_data32(pinput32, cmode, DATA);
 			free_data32(poutput32, cmode, DATA);
 			free_data32(keysched32, cmode, KEY);
+			break;
 		case mode_64:
 			pinput64 = prepare_data64(input, padmode, opmode, cmode);
+			if (pinput64.len == 0) {
+				exit(EXIT_FAILURE);
+			}
 			poutput64 = prepare_output64(pinput64, padmode, cmode); 
+			if (poutput64.len == 0) {
+				exit(EXIT_FAILURE);
+			}
 			keysched64 = key_expand64(key.bbuf, key.blen, num_rounds);
 			if (opmode == ENCRYPT) {
 				if (cmode == ECB) {

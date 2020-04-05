@@ -64,6 +64,8 @@ data16 prepare_data16(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 	data16 ret;
 	ret.text = NULL;
 	size_t IVoffset = 0;
+	size_t get_rand_err;
+	int get_rand_err_no;
 
 	if (opmode == DECRYPT) {
 		if (padmode == PKCS7 && (input.blen % 4) != 0) {
@@ -105,7 +107,7 @@ data16 prepare_data16(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 	if ( cmode == CBC && opmode == DECRYPT ) {
 		IVoffset = 2;
 		ret.IV = malloc(2*sizeof(uint16_t));
-		if (ret.text == NULL) {
+		if (ret.IV == NULL) {
 			fprintf(stderr, "Unable to allocate memory for IV in data preparation routine. Terminating.\n");
 			ret.len = 0;
 			return ret; //make sure to handle error in main
@@ -120,8 +122,9 @@ data16 prepare_data16(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 			ret.len = 0;
 			return ret; //make sure to handle error in main
 		}
-		if (getrandom(ret.IV, 4, GRND_RANDOM) != 4) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
-			fprintf(stderr, "Unable to acquire cryptographically random bytes to generate IV. Terminating.\n");
+		if ((get_rand_err = getrandom(ret.IV, 4, GRND_RANDOM)) != 4) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
+			get_rand_err_no = errno;
+			fprintf(stderr, "Unable to acquire cryptographically random bytes to generate IV. Error code %ld returned. Errno is %d. Terminating.\n", get_rand_err, get_rand_err_no);
 			ret.len = 0;
 			return ret;
 		}
@@ -149,6 +152,8 @@ data32 prepare_data32(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 	data32 ret;
 	ret.text = NULL;
 	size_t IVoffset = 0;
+	size_t get_rand_err;
+	int get_rand_err_no;
 
 	if (opmode == DECRYPT) {
 		if (padmode == PKCS7 && (input.blen % 8) != 0) {
@@ -197,8 +202,15 @@ data32 prepare_data32(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 		*(ret.IV + 1) = (*(input.bbuf + 4) << 24) | (*(input.bbuf + 5) << 16) | (*(input.bbuf + 6) << 8) | *(input.bbuf + 7);
 	}
 	else if ( cmode == CBC && opmode == ENCRYPT ) {
-		if (getrandom(ret.IV, 8, GRND_RANDOM) != 8) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
-			fprintf(stderr, "Unable to acquire cryptographically random bytes to generate IV. Terminating.\n");
+		ret.IV = malloc(2*sizeof(uint32_t));
+		if (ret.IV == NULL) {
+			fprintf(stderr, "Unable to allocate memory for IV in data preparation routine. Terminating.\n");
+			ret.len = 0;
+			return ret; //make sure to handle error in main
+		}
+		if ((get_rand_err = getrandom(ret.IV, 8, GRND_RANDOM)) != 8) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
+			get_rand_err_no = errno;
+			fprintf(stderr, "Unable to acquire cryptographically random bytes to generate IV. Error code %ld returned. Errno is %d. Terminating.\n", get_rand_err, get_rand_err_no);
 			ret.len = 0;
 			return ret;
 		}
@@ -228,6 +240,8 @@ data64 prepare_data64(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 	data64 ret;
 	ret.text = NULL;
 	size_t IVoffset = 0;
+	size_t get_rand_err;
+	int get_rand_err_no;
 
 	if (opmode == DECRYPT) {
 		if (padmode == PKCS7 && (input.blen % 16) != 0) {
@@ -282,8 +296,15 @@ data64 prepare_data64(bdata input, padmode_t padmode, opmode_t opmode, cmode_t c
 			       	(((uint64_t) (*(input.bbuf + 14))) <<  8) | (((uint64_t) (*(input.bbuf + 15))));
 	}
 	else if ( cmode == CBC && opmode == ENCRYPT ) {
-		if (getrandom(ret.IV, 16, GRND_RANDOM) != 16) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
-			fprintf(stderr, "Unable to acquire cryptographically random bytes to generate IV. Terminating.\n");
+		ret.IV = malloc(2*sizeof(uint64_t));
+		if (ret.IV == NULL) {
+			fprintf(stderr, "Unable to allocate memory for IV in data preparation routine. Terminating.\n");
+			ret.len = 0;
+			return ret; //make sure to handle error in main
+		}
+		if ((get_rand_err = getrandom(ret.IV, 16, GRND_RANDOM)) != 16) { //Endianess shouldn't matter here as long as we read the IV into the output buffer correctly
+			get_rand_err_no = errno;
+			fprintf(stderr, "Unable to acquire cryptographically random bytes to generate IV. Error code %ld returned. Errno is %d. Terminating.\n", get_rand_err, get_rand_err_no);
 			ret.len = 0;
 			return ret;
 		}
@@ -313,9 +334,7 @@ data16 prepare_output16(data16 input, padmode_t padmode, cmode_t cmode)
 {
 	data16 ret;
 	ret.len = input.len;
-	if (padmode == CTS) {
-		ret.pad = input.pad;
-	}
+	ret.pad = input.pad; //Value only used in CTS mode
 	ret.IV = NULL;
 	if (cmode == CBC) {
 		ret.IV = input.IV;
@@ -334,9 +353,7 @@ data32 prepare_output32(data32 input, padmode_t padmode, cmode_t cmode)
 {
 	data32 ret;
 	ret.len = input.len;
-	if (padmode == CTS) {
-		ret.pad = input.pad;
-	}
+	ret.pad = input.pad; //Value only used in CTS mode
 	ret.IV = NULL;
 	if (cmode == CBC) {
 		ret.IV = input.IV;
@@ -355,9 +372,7 @@ data64 prepare_output64(data64 input, padmode_t padmode, cmode_t cmode)
 {
 	data64 ret;
 	ret.len = input.len;
-	if (padmode == CTS) {
-		ret.pad = input.pad;
-	}
+	ret.pad = input.pad; //Value only used in CTS mode
 	ret.IV = NULL;
 	if (cmode == CBC) {
 		ret.IV = input.IV;
@@ -379,11 +394,9 @@ bdata output_data16(data16 output, opmode_t opmode, padmode_t padmode, cmode_t c
 	if (opmode == ENCRYPT && cmode == CBC) {
 		IVoffset = 2;
 	}
+	pad = 0;
 	if (padmode == CTS) {
 		pad = output.pad;
-	}
-	else if (opmode == ENCRYPT) {
-		pad = 0;
 	}
 	bdata ret;
 	ret.blen = 2*(IVoffset + output.len) - pad;
@@ -409,6 +422,7 @@ bdata output_data16(data16 output, opmode_t opmode, padmode_t padmode, cmode_t c
 		j = 4;
 		while (pad == 0 && j > 0) {
 			pad = unpad((ret.bbuf + ret.blen - j), j, j);
+			j -= 1;
 		}
 		if (pad == 0) {
 			fprintf(stderr, "Warning - decrypted text does not appear to be PKCS7 padded\n");
@@ -428,11 +442,9 @@ bdata output_data32(data32 output, opmode_t opmode, padmode_t padmode, cmode_t c
 	if (opmode == ENCRYPT && cmode == CBC) {
 		IVoffset = 2;
 	}
+	pad = 0;
 	if (padmode == CTS) {
 		pad = output.pad;
-	}
-	else if (opmode == ENCRYPT) {
-		pad = 0;
 	}
 	bdata ret;
 	ret.blen = 4*(IVoffset + output.len) - pad;
@@ -462,6 +474,7 @@ bdata output_data32(data32 output, opmode_t opmode, padmode_t padmode, cmode_t c
 		j = 8;
 		while (pad == 0 && j > 0) {
 			pad = unpad((ret.bbuf + ret.blen - j), j, j);
+			j -= 1;
 		}
 		if (pad == 0) {
 			fprintf(stderr, "Warning - decrypted text does not appear to be PKCS7 padded\n");
@@ -481,11 +494,9 @@ bdata output_data64(data64 output, opmode_t opmode, padmode_t padmode, cmode_t c
 	if (opmode == ENCRYPT && cmode == CBC) {
 		IVoffset = 2;
 	}
+	pad = 0;
 	if (padmode == CTS) {
 		pad = output.pad;
-	}
-	else if (opmode == ENCRYPT) {
-		pad = 0;
 	}
 	bdata ret;
 	ret.blen = 8*(IVoffset + output.len) - pad;
@@ -523,6 +534,7 @@ bdata output_data64(data64 output, opmode_t opmode, padmode_t padmode, cmode_t c
 		j = 16;
 		while (pad == 0 && j > 0) {
 			pad = unpad((ret.bbuf + ret.blen - j), j, j);
+			j -= 1;
 		}
 		if (pad == 0) {
 			fprintf(stderr, "Warning - decrypted text does not appear to be PKCS7 padded\n");

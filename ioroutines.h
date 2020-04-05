@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <sys/random.h>
+#include <errno.h>
 #include "crypt.h"
 
 typedef enum {
