@@ -156,15 +156,15 @@ int main(int argc, char ** argv)
 	data64 pinput64, poutput64, keysched64;
 	switch (wsize) {
 		case mode_16:
-			pinput16 = prepare_data16(input, padmode, opmode, cmode); 
+			pinput16 = prepare_data16(&input, padmode, opmode, cmode); 
 			if (pinput16.len == 0) {
 				exit(EXIT_FAILURE);
 			}
-			poutput16 = prepare_output16(pinput16, padmode,  cmode); 
+			poutput16 = prepare_output16(&pinput16, padmode,  cmode); 
 			if (poutput16.len == 0) {
 				exit(EXIT_FAILURE);
 			}
-			keysched16 = key_expand16(key.bbuf, key.blen, num_rounds);
+			keysched16 = key_expand16(&key, num_rounds);
 			if (opmode == ENCRYPT) {
 				if (cmode == ECB) {
 					rc5_ecb_encrypt16(pinput16, poutput16, keysched16.text, num_rounds, padmode);
@@ -181,21 +181,21 @@ int main(int argc, char ** argv)
 					rc5_cbc_decrypt16(pinput16, poutput16, keysched16.text, num_rounds, padmode);
 				}
 			}
-			output = output_data16(poutput16, opmode, padmode, cmode); 
-			free_data16(pinput16, cmode, DATA);
-			free_data16(poutput16, cmode, DATA);
+			output = output_data16(&poutput16, opmode, padmode, cmode); 
+			free_data16(pinput16, cmode, INDATA);
+			free_data16(poutput16, cmode, OUTDATA);
 			free_data16(keysched16, cmode, KEY);
 			break;
 		case mode_32:
-			pinput32 = prepare_data32(input, padmode, opmode, cmode);
+			pinput32 = prepare_data32(&input, padmode, opmode, cmode);
 			if (pinput32.len == 0) {
 				exit(EXIT_FAILURE);
 			}
-			poutput32 = prepare_output32(pinput32, padmode, cmode); 
+			poutput32 = prepare_output32(&pinput32, padmode, cmode); 
 			if (poutput32.len == 0) {
 				exit(EXIT_FAILURE);
 			}
-			keysched32 = key_expand32(key.bbuf, key.blen, num_rounds);
+			keysched32 = key_expand32(&key, num_rounds);
 			if (opmode == ENCRYPT) {
 				if (cmode == ECB) {
 					rc5_ecb_encrypt32(pinput32, poutput32, keysched32.text, num_rounds, padmode);
@@ -212,21 +212,21 @@ int main(int argc, char ** argv)
 					rc5_cbc_decrypt32(pinput32, poutput32, keysched32.text, num_rounds, padmode);
 				}
 			}
-			output = output_data32(poutput32, opmode, padmode, cmode); 
-			free_data32(pinput32, cmode, DATA);
-			free_data32(poutput32, cmode, DATA);
+			output = output_data32(&poutput32, opmode, padmode, cmode); 
+			free_data32(pinput32, cmode, INDATA);
+			free_data32(poutput32, cmode, OUTDATA);
 			free_data32(keysched32, cmode, KEY);
 			break;
 		case mode_64:
-			pinput64 = prepare_data64(input, padmode, opmode, cmode);
+			pinput64 = prepare_data64(&input, padmode, opmode, cmode);
 			if (pinput64.len == 0) {
 				exit(EXIT_FAILURE);
 			}
-			poutput64 = prepare_output64(pinput64, padmode, cmode); 
+			poutput64 = prepare_output64(&pinput64, padmode, cmode); 
 			if (poutput64.len == 0) {
 				exit(EXIT_FAILURE);
 			}
-			keysched64 = key_expand64(key.bbuf, key.blen, num_rounds);
+			keysched64 = key_expand64(&key, num_rounds);
 			if (opmode == ENCRYPT) {
 				if (cmode == ECB) {
 					rc5_ecb_encrypt64(pinput64, poutput64, keysched64.text, num_rounds, padmode);
@@ -243,9 +243,9 @@ int main(int argc, char ** argv)
 					rc5_cbc_decrypt64(pinput64, poutput64, keysched64.text, num_rounds, padmode);
 				}
 			}
-			output = output_data64(poutput64, opmode, padmode, cmode); 
-			free_data64(pinput64, cmode, DATA);
-			free_data64(poutput64, cmode, DATA);
+			output = output_data64(&poutput64, opmode, padmode, cmode); 
+			free_data64(pinput64, cmode, INDATA);
+			free_data64(poutput64, cmode, OUTDATA);
 			free_data64(keysched64, cmode, KEY);
 	}
 
@@ -253,9 +253,9 @@ int main(int argc, char ** argv)
 		fprintf(stderr, "Warning - failure to write complete output to specified file. Some data may be lost.\n");
 	}
 
-	free_bdata(input);
-	free_bdata(output);
-	free_bdata(key);
+	free_bdata(&input);
+	free_bdata(&output);
+	free_bdata(&key);
 	if (outfile != stdout) {
 		fclose(outfile);
 	}
