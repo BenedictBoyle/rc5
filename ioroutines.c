@@ -414,7 +414,7 @@ bdata output_data16(data16 *output, opmode_t opmode, padmode_t padmode, cmode_t 
 	}
 	size_t i;
 	for (i = 2*IVoffset; i < ret.blen; i++) {
-		*(ret.bbuf + i) = (*(output->text - 2*IVoffset + i/2) >> 8*(1 - (i % 2))) & 0xff;
+		*(ret.bbuf + i) = (*(output->text - IVoffset + i/2) >> 8*(1 - (i % 2))) & 0xff;
 	}
 	size_t j;
 	if (padmode == PKCS7 && opmode == DECRYPT) {
@@ -466,7 +466,7 @@ bdata output_data32(data32 *output, opmode_t opmode, padmode_t padmode, cmode_t 
 	}
 	size_t i;
 	for (i = 4*IVoffset; i < ret.blen; i++) {
-		*(ret.bbuf + i) = (*(output->text - 4*IVoffset + i/4) >>  8*(3 - (i % 4))) & 0xff;
+		*(ret.bbuf + i) = (*(output->text - IVoffset + i/4) >>  8*(3 - (i % 4))) & 0xff;
 	}
 	size_t j;
 	if (padmode == PKCS7 && opmode == DECRYPT) {
@@ -526,7 +526,7 @@ bdata output_data64(data64 *output, opmode_t opmode, padmode_t padmode, cmode_t 
 	}
 	size_t i;
 	for (i = 8*IVoffset; i < ret.blen; i++) {
-		*(ret.bbuf + i) = (*(output->text - 8*IVoffset + i/8) >>  8*(7 - (i % 8))) & 0xff;
+		*(ret.bbuf + i) = (*(output->text - IVoffset + i/8) >>  8*(7 - (i % 8))) & 0xff;
 	}
 	size_t j;
 	if (padmode == PKCS7 && opmode == DECRYPT) {
