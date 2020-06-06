@@ -86,7 +86,7 @@ data16 key_expand16(bdata *raw_key, size_t r)
 
 	size_t t = 2*(r + 1);
 
-	static uint16_t *L;
+	uint16_t *L;
         L = malloc(sizeof(uint16_t)*c);
 	size_t i;
 	for ( i = 0; i < c; i++) {
@@ -171,7 +171,7 @@ data32 key_expand32(bdata *raw_key, size_t r)
 	}
 	size_t t = 2*(r + 1);
 
-	static uint32_t *L;
+	uint32_t *L;
         L = malloc(sizeof(uint32_t)*c);
 	size_t i;
 	for ( i = 0; i < c; i++) {
@@ -185,7 +185,7 @@ data32 key_expand32(bdata *raw_key, size_t r)
 	 * Q32
 	 */
 
-	static uint32_t *S;
+	uint32_t *S;
 	S = malloc(sizeof(uint32_t)*t);
 	//Free in main routine
 	*S = P32;
@@ -317,7 +317,7 @@ data64 key_expand64(bdata *raw_key, size_t r)
 	}
 	size_t t = 2*(r + 1);
 
-	static uint64_t *L;
+	uint64_t *L;
         L = malloc(sizeof(uint64_t)*c);
 	size_t i;
 	for ( i = 0; i < c; i++) {
@@ -336,7 +336,7 @@ data64 key_expand64(bdata *raw_key, size_t r)
 	 * Q64
 	 */
 
-	static uint64_t *S;
+	uint64_t *S;
 	S = malloc(sizeof(uint64_t)*t);
 	// Free in main routine
 	*S = P64;
